@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { addProducto } from '../slices/productosSlice';
 import { addItem } from '../slices/ticketSlice';
-import { TextField, Button, Typography, Box,CircularProgress } from '@mui/material';
+import { TextField, Button, Typography, Box,CircularProgress,List, ListItem,ListItemText } from '@mui/material';
 import axios from '../api/axios';
 
 const BuscarProducto = () => {
@@ -15,6 +15,8 @@ const BuscarProducto = () => {
   const [selectedProducto, setSelectedProducto] = useState(null);
   const [mostrarFormularioNuevoProducto, setMostrarFormularioNuevoProducto] = useState(false);
   const [loading, setLoading] = useState(false); // Estado de carga
+  const [productosFiltrados, setProductosFiltrados] = useState([]); // Estado para los productos filtrados
+
 
   const productos = useSelector((state) => state.productos.items);
   const dispatch = useDispatch();
@@ -23,19 +25,29 @@ const BuscarProducto = () => {
     setBusqueda(texto);
     setNombreNuevo(texto);
     setMostrarFormularioNuevoProducto(false);
-    const resultado = productos.find((producto) =>
+    const resultado = productos.filter((producto) =>
       producto.name.toLowerCase().includes(texto.toLowerCase()) && texto !== ''
     );
-    if (resultado) {
-      setSelectedProducto(resultado);
-      setPrecio(resultado.price);
-    } else {
-      if (texto !== '') {
-        setMostrarFormularioNuevoProducto(true);
+    if (resultado.length > 0) {
+      if (resultado.length === 1) {
+        handleSeleccionarProducto(resultado[0]); // Si es uno solo seleccionarlo
       }
-      setSelectedProducto(null);
+      else {
+        setProductosFiltrados(resultado); // Mostrar los productos filtrados si hay coincidencias
+      }
+    } else {
+      setProductosFiltrados([]);
+      setMostrarFormularioNuevoProducto(true); // Si no hay coincidencias, mostrar el formulario para agregar un nuevo producto
     }
   };
+
+    // Seleccionar un producto de la lista filtrada
+    const handleSeleccionarProducto = (producto) => {
+      setSelectedProducto(producto);
+      //setBusqueda(producto.name); // Autocompletar el campo de búsqueda con el nombre del producto seleccionado
+      setPrecio(producto.price); // Asignar el precio del producto seleccionado
+      setProductosFiltrados([]); // Limpiar la lista de productos filtrados
+    };
 
   const handleAgregarProducto = async() => {
     setLoading(true);
@@ -104,6 +116,21 @@ const BuscarProducto = () => {
         onChange={(e) => handleBuscar(e.target.value)}
         fullWidth
       />
+
+      {productosFiltrados.length > 0 && (
+              <List>
+                {productosFiltrados.map((producto) => (
+                  <ListItem
+                    button
+                    key={producto.id}
+                    onClick={() => handleSeleccionarProducto(producto)}
+                  >
+                    <ListItemText primary={producto.name} secondary={`Precio: ${producto.price}`} />
+                  </ListItem>
+                ))}
+              </List>
+            )}
+
       {selectedProducto && (
         <Box mt={4}>
           <Typography variant="h6">Producto: {selectedProducto.name}</Typography>
