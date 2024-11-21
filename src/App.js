@@ -1,24 +1,33 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchProductos } from './slices/productosSlice';
+import { fetchVentas } from './slices/ventasSlice';
+import { Container, Typography,Box } from '@mui/material';
+import Ticket from './components/Ticket';
+import VentasDia from './components/VentasDia';
+import BuscarProducto from './components/BuscarProducto';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchProductos());
+    dispatch(fetchVentas());
+  }, [dispatch]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Container>
+      <Typography variant="h3" align="center" gutterBottom>Kiosko Juanita</Typography>
+      <Box mt={4}>
+        <BuscarProducto />
+      </Box>
+      <Box mt={6}>
+        <Ticket />
+      </Box>
+      <Box mt={6} mb={4}>
+        <VentasDia />
+      </Box>
+    </Container>
   );
 }
 
